@@ -1,0 +1,3 @@
+C:/Users/patri/Documents/Software Development/patrick_standard_lib/cmake-build-debug/CMakeFiles/PMcGuireStandard.dir
+C:/Users/patri/Documents/Software Development/patrick_standard_lib/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/patri/Documents/Software Development/patrick_standard_lib/cmake-build-debug/CMakeFiles/rebuild_cache.dir
