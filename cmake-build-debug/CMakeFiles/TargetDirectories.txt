@@ -1,3 +1,0 @@
-/home/patrick/patrick_standard_lib/cmake-build-debug/CMakeFiles/patrick_standard_lib.dir
-/home/patrick/patrick_standard_lib/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/patrick/patrick_standard_lib/cmake-build-debug/CMakeFiles/rebuild_cache.dir

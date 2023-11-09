@@ -5,4 +5,4 @@ set(CMAKE_CXX_STANDARD 11)
 
 include_directories(include)
 
-add_executable(patrick_standard_lib main.cpp include/pmcguire.h)
+add_executable(patrick_standard_lib main.cpp include/psl.h include/String.h)

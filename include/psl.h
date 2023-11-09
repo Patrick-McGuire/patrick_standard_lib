@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-namespace pmcguire {
+namespace psl {
     typedef int t_size;
     typedef int t_index;
 }

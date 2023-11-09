@@ -1,24 +1,24 @@
 #ifndef PMCGUIRESTANDARD_ARRAY_H
 #define PMCGUIRESTANDARD_ARRAY_H
 
-#include "pmcguire.h"
+#include <psl.h>
 
-namespace pmcguire {
+namespace psl {
     template<typename T>
     class ArrayBase {
     protected:
         T *m_elements = nullptr;
-        pmcguire::t_size m_length = 0;
-        pmcguire::t_size m_maxLength = 0;
+        psl::t_size m_length = 0;
+        psl::t_size m_maxLength = 0;
 
     public:
         ArrayBase() = default;
 
-        pmcguire::t_size length() const {
+        psl::t_size length() const {
             return m_length;
         }
 
-        pmcguire::t_size maxLength() const {
+        psl::t_size maxLength() const {
             return m_maxLength;
         }
 
@@ -42,24 +42,24 @@ namespace pmcguire {
             return true;
         }
 
-        virtual bool insert(pmcguire::t_size i, const T &value) {
+        virtual bool insert(psl::t_size i, const T &value) {
             memmove(&m_elements[i + 1], &m_elements[i], sizeof(T) * (m_length - i));
             m_elements[i] = value;
             m_length++;
             return true;
         }
 
-        virtual bool remove(pmcguire::t_size i) {
+        virtual bool remove(psl::t_size i) {
             memmove(&m_elements[i], &m_elements[i + 1], sizeof(T) * (m_length - i - 1));
             m_length--;
             return true;
         }
 
-        virtual const T &operator[](pmcguire::t_index i) const {
+        virtual const T &operator[](psl::t_index i) const {
             return m_elements[i];
         }
 
-        virtual T &operator[](pmcguire::t_index i) {
+        virtual T &operator[](psl::t_index i) {
             return m_elements[i];
         }
     };
@@ -83,28 +83,28 @@ namespace pmcguire {
             return false;
         }
 
-        bool insert(pmcguire::t_size i, const T &value) final {
+        bool insert(psl::t_size i, const T &value) final {
             if (!ArrayBase<T>::full() && i < ArrayBase<T>::length() + 1 && i > 0) {
                 return ArrayBase<T>::insert(i, value);
             }
             return false;
         }
 
-        bool remove(pmcguire::t_size i) final {
+        bool remove(psl::t_size i) final {
             if (!ArrayBase<T>::empty() && i < ArrayBase<T>::length() && i > 0) {
                 return ArrayBase<T>::remove(i);
             }
             return false;
         }
 
-        const T &operator[](pmcguire::t_index i) const final {
+        const T &operator[](psl::t_index i) const final {
             if (i < ArrayBase<T>::length() && i > 0) {
                 return ArrayBase<T>::operator[](i);
             }
             return ArrayBase<T>::operator[](0);
         }
 
-        T &operator[](pmcguire::t_index i) final {
+        T &operator[](psl::t_index i) final {
             if (i < ArrayBase<T>::length() && i > 0) {
                 return ArrayBase<T>::operator[](i);
             }
@@ -127,19 +127,19 @@ namespace pmcguire {
             return ArrayBase<T>::pop();
         }
 
-        bool insert(pmcguire::t_size i, const T &value) final {
+        bool insert(psl::t_size i, const T &value) final {
             return ArrayBase<T>::insert(i, value);
         }
 
-        bool remove(pmcguire::t_size i) final {
+        bool remove(psl::t_size i) final {
             return ArrayBase<T>::remove(i);
         }
 
-        const T &operator[](pmcguire::t_index i) const final {
+        const T &operator[](psl::t_index i) const final {
             return ArrayBase<T>::operator[](i);
         }
 
-        T &operator[](pmcguire::t_index i) final {
+        T &operator[](psl::t_index i) final {
             return ArrayBase<T>::operator[](i);
         }
     };
