@@ -1,52 +1,59 @@
 #ifndef PATRICK_STANDARD_LIB_STRING_H
 #define PATRICK_STANDARD_LIB_STRING_H
 
-#include <psl.h>
-#include "iostream"
-
-
-//int Mat = rand()%7;
-//
-//if (Mat == 6 || Mat == 5){
-//std::cout << "\nMat got away  :)";
-//runaway++;
-//} else{
-//std::cout << "\nMat could not face the Gazebo alone  :(";
-//}
+#include "psl.h"
+#include "Converter.h"
 
 namespace psl {
-    class SubString;
-
     class String {
     protected:
-        char *m_buff = nullptr;
-        t_size &m_length;
-        t_size m_maxLength = 0;
+        struct StringData {
+            char *buff;
+            t_size length;
+            t_size maxLength;
+        };
+        StringData &stringData;
 
-        void term() {
-            m_buff[m_length] = '\0';
+        inline void term() const {
+            stringData.buff[length()] = '\0';
+        }
+
+        inline void autoLength() {
+            for (int i = 0; i < maxLength(); i++) {
+                if (stringData.buff[i] == '\0') {
+                    stringData.length = i + 1;
+                    break;
+                }
+            }
+            term();
         }
 
     public:
-        String(char *buff, t_size maxLength, t_size &lengthRef) : m_length(lengthRef) {
-            m_buff = buff;
-            m_maxLength = maxLength;
-        }
+        // Class that has storage, will extend this
+        template<unsigned N>
+        class size;
 
-        t_size &lengthRef() {
-            return m_length;
-        }
+        class substr;
 
-        const char *c_str() const {
-            return m_buff;
-        }
+        explicit String(StringData &stringData1) : stringData(stringData1) {}
+
+        String(const String &other) = default;
+
+        template<unsigned N>
+        String(const size<N> &other);
+
+        String(const substr &other);
 
         t_size length() const {
-            return m_length;
+            return stringData.length;
         }
 
         t_size maxLength() const {
-            return m_maxLength;
+            return stringData.maxLength;
+        }
+
+        t_size availableLength() {
+            return maxLength() - length();
         }
 
         bool full() const {
@@ -57,17 +64,21 @@ namespace psl {
             return length() <= 0;
         }
 
+        const char *c_str() const {
+            return stringData.buff;
+        }
+
         void clear() {
-            m_buff[0] = '\0';
-            m_length = 0;
+            stringData.buff[0] = '\0';
+            stringData.length = 0;
         }
 
         virtual const char &operator[](psl::t_index i) const {
-            return m_buff[i];
+            return stringData.buff[i];
         }
 
         virtual char &operator[](psl::t_index i) {
-            return m_buff[i];
+            return stringData.buff[i];
         }
 
         bool equals(const String &other) const {
@@ -84,8 +95,8 @@ namespace psl {
 
         bool append(char c) {
             if (!full()) {
-                m_buff[m_length] = c;
-                m_length++;
+                stringData.buff[length()] = c;
+                stringData.length++;
                 term();
                 return true;
             }
@@ -110,20 +121,22 @@ namespace psl {
         }
 
         bool append(double num, int digits = 4) {
-            char converter[32];
-            snprintf(converter, 32, "%.2f", num);
-            return append(converter);
+            if (availableLength() > 0) {
+                doubleToString(num, &stringData.buff[length()], digits, availableLength());
+                return true;
+            }
+            return false;
         }
 
         bool remove(int i, int len = 1) {
-            memmove(&m_buff[i], &m_buff[i + len], sizeof(char) * (m_length - i - len));
-            m_length -= len;
+            memmove(&stringData.buff[i], &stringData.buff[i + len], sizeof(char) * (stringData.length - i - len));
+            stringData.length -= len;
             term();
             return true;
         }
 
-        String& operator=(const String &other) {
-            if(this == &other) {
+        String &operator=(const String &other) {
+            if (this == &other) {
                 return *this;
             }
             clear();
@@ -131,7 +144,12 @@ namespace psl {
             return *this;
         }
 
-        SubString subString(int start, int len);
+        String &operator=(const substr &other);
+
+        template<unsigned N>
+        String &operator=(const size<N> &other);
+
+        substr subString(int start, int len);
 
         void subString(String &output, int start, int len);
 
@@ -140,44 +158,138 @@ namespace psl {
         }
 
         double toDouble() const {
-            return atof(c_str());
+            return stringToDouble(c_str());
         }
+
+        t_size count(char c) const {
+            t_size count = 0;
+            for (const char *str = stringData.buff; *str != '\0'; str++) {
+                if (*str == c) count++;
+            }
+            return count;
+        }
+
+        t_size indexOf(char c, t_size n = 1) const {
+            for (const char *str = stringData.buff; *str != '\0'; str++) {
+                if (*str == c) {
+                    n--;
+                }
+
+                if (n <= 0) {
+                    return str - stringData.buff;
+                }
+            }
+            return -1;
+        }
+
+        substr split(char c, t_size n = 0);
     };
 
-
-    class SubString final : public String {
+    class String::substr final : public String {
     private:
-        char storedChar;
-        int replaceLength;
+        char swapChar = '\0';
+        t_size swapIndex = -1;
+        StringData stringDataNonRef{};
+
     public:
-        SubString(String &str, int start, int len) : String(&str[start], str.maxLength() - start, str.lengthRef()) {
-            replaceLength = len;
-            storedChar = (*this)[replaceLength];
-            (*this)[replaceLength] = '\0';
+        substr(const String &str, int start, int len) : String(stringDataNonRef) {
+            stringDataNonRef = {str.stringData.buff + start, len, len};
+            swapIndex = len;
+            swapChar = (*this)[swapIndex];
+            (*this)[swapIndex] = '\0';
         }
 
-        ~SubString() {
-            (*this)[replaceLength] = storedChar;
+        substr(const String::substr &other) : String(stringDataNonRef) {
+            swapChar = other.swapChar;
+            swapIndex = other.swapIndex;
+            stringDataNonRef = other.stringDataNonRef;
+
+            swapChar = (*this)[swapIndex];
+            (*this)[swapIndex] = '\0';
+        }
+
+        ~substr() {
+            (*this)[swapIndex] = swapChar;
         }
     };
 
-    template<unsigned maxLengthN>
-    class StringStorage final : public String {
-    private:
-        char m_storage[maxLengthN + 1] = "";
-        t_size m_length = 0;
-    public:
-        StringStorage() : String(m_storage, maxLengthN, m_length) {}
-    };
-
-
-    SubString String::subString(int start, int len) {
+    String::substr String::subString(int start, int len) {
         return {*this, start, len};
     }
 
     void String::subString(String &output, int start, int len) {
         output = subString(start, len);
     }
+
+    /**
+     * Array storage class
+     * @brief Version of array that has it's own storage
+     *
+     * @tparam T Type of data to store in array
+     * @tparam N Maximum number of elements
+     */
+    template<unsigned N>
+    class String::size final : public String {
+    private:
+        char buff[N + 1] = "";
+        StringData stringDataNonRef = {buff, 0, N};
+    public:
+        size() : String(stringDataNonRef) {}
+
+        explicit size(const char *str) : String(stringDataNonRef) {
+            append(str);
+        }
+
+        explicit size(double num, int precision = 4) : String(stringDataNonRef) {
+            append(num, precision);
+        }
+
+        explicit size(int num) : String(stringDataNonRef) {
+            append(num);
+        }
+    };
+
+    template<unsigned int N>
+    String::String(const String::size<N> &other) : stringData(other.stringData) {}
+
+    String::String(const String::substr &other) : stringData(other.stringData) {}
+
+    String &String::operator=(const String::substr &other) {
+        if (this == &other) {
+            return *this;
+        }
+        clear();
+        append(other);
+        return *this;
+    }
+
+    String::substr String::split(char c, t_size n) {
+        t_size start;
+        if (n == 0) {
+            start = 0;
+        } else {
+            start = indexOf(c, n) + 1;
+        }
+
+
+        t_size end = indexOf(c, n + 1);
+        if (end < 0)
+            end = length();
+        return {
+                *this, start, end - start
+        };
+    }
+
+    template<unsigned int N>
+    String &String::operator=(const String::size<N> &other) {
+        if (this == &other) {
+            return *this;
+        }
+        clear();
+        append(other);
+        return *this;
+    }
+
 }
 
 #endif //PATRICK_STANDARD_LIB_STRING_H

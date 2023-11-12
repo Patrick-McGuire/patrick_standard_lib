@@ -1,61 +1,42 @@
 #include <iostream>
-//#include <Array.h>
-#include <String.h>
-
-#include <vector>
+#include <iomanip>
+#include "psl.h"
+#include "String.h"
+#include "Array.h"
+#include "Converter.h"
 
 using namespace psl;
 
-void doThing(String & str) {
-    std::cout << str.c_str() << "\n";
+void printArray(const Array<String *> &array) {
+    for (int i = 0; i < array.length(); i++) {
+        std::cout << array[i]->c_str() << ", ";
+    }
+    std::cout << "\n";
 }
-
-//void stringSplit()
 
 int main() {
-    StringStorage<100> str;
-    StringStorage<100> subStr;
-    str.append("123456789");
-    str.subString(subStr, 1, 3);
+    String::size<100> str("-3241.342,54,213.234354,.1243254,12343567.43212345");
+    for (int i = 0; i <= str.count(','); i++) {
+        String::substr split = str.split(',', i);
+        std::cout << split.toDouble() << "\n";
+    }
     std::cout << str.c_str() << "\n";
-    std::cout << subStr.c_str() << "\n";
 
 
-//    str.append("123456789");
+//    std::cout << std::setprecision(30) << str.toDouble() << "\n";
+
+//    String::size<100> str1("abcdefg");
 //    {
-//        SubString a = str.subString(1, 3);
-//                auto b = a.subString(0, 2);
-//                        auto c = b.subString(1, 1);
-//        doThing(c);
-////        SubString b = a.subString(0, 2);
-////        doThing(b);
+//        String::substr a = str1.subString(1, 4).subString(1,2).subString(0,1);
+//        std::cout << a.c_str() << "\n";
+//        std::cout << str1.c_str() << "\n";
 //    }
-//    std::cout << str.c_str() << "\n";
+//    std::cout << str1.c_str() << "\n";
 
-//    std::cout << str.c_str() << "\n";
 
-//    {
-//        SubString str2 = str.subString(1, 3);
-////        str.clear();
-////        str.append(str2);
-//        std::cout << str2.c_str() << "\n";
-//        std::cout << str.c_str() << "\n";
-//    }
-//    std::cout << str.c_str() << "\n";
-
-//    str.remove(1, 8);
-//    std::cout << str.c_str();
-}
-
-//void printArray(const Array<double> &array) {
-//    for (int i = 0; i < array.length(); i++) {
-//        std::cout << array[i] << ", ";
-//    }
-//    std::cout << "\n";
-//}
+//    Array<double>::size<10> array;
+//    Array<double> ar = array;
 //
-//int main() {
-//    auto array = ArrayStorage<double, 10>();
 //    array.length();
 //    array.maxLength();
 //    array.full();
@@ -71,7 +52,7 @@ int main() {
 //    printArray(array);
 //    array.remove(5);
 //    printArray(array);
-//
-//
-//    return 0;
-//}
+
+
+    return 0;
+}

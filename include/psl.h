@@ -1,13 +1,11 @@
 #ifndef PMCGUIRESTANDARD_PMCGUIRE_H
 #define PMCGUIRESTANDARD_PMCGUIRE_H
 
-#include "cstdlib"
-#include <stdio.h>
-#include <string.h>
-
 namespace psl {
     typedef int t_size;
     typedef int t_index;
+
+#define PSL_isDigit(c) isdigit(c)
 }
 
 #endif //PMCGUIRESTANDARD_PMCGUIRE_H
