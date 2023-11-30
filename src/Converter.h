@@ -1,10 +1,8 @@
 #ifndef PATRICK_STANDARD_LIB_CONVERTER_H
 #define PATRICK_STANDARD_LIB_CONVERTER_H
 
-#include <intrin.h>
-#include <cstdint>
 #include "psl.h"
-#include "cstdio"
+#include <cstdio>
 
 namespace psl {
     inline bool charIsDigit(char c) {

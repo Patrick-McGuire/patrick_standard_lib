@@ -2,6 +2,7 @@
 #define PATRICK_STANDARD_LIB_ARRAY_H
 
 #include "psl.h"
+#include <cwchar>
 
 namespace psl {
     template<typename T>
@@ -20,7 +21,7 @@ namespace psl {
 
 
     public:
-        // Class that has storage, will extend this
+        // Class that has m_storage, will extend this
         template<unsigned N>
         class size;
 
@@ -122,8 +123,8 @@ namespace psl {
     };
 
     /**
-     * Array storage class
-     * @brief Version of array that has it's own storage
+     * Array m_storage class
+     * @brief Version of array that has it's own m_storage
      *
      * @tparam T Type of data to store in array
      * @tparam N Maximum number of elements
