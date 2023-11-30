@@ -1,68 +1,43 @@
-//#include ""
 #include <iostream>
+//#include <iomanip>
 #include "src/psl.h"
-#include "src/String.h"
+//#include "src/String.h"
+//#include "src/Array.h"
+#include "src/Converter.h"
+#include "src/pub_sub/Manager.h"
+#include "src/pub_sub/Publisher.h"
+#include "src/pub_sub/Subscriber.h"
+
 
 using namespace psl;
 
-void manipulateString(StringRef str) {
-    str.append("123");
-    std::cout << str.c_str() << " output\n";
+struct Test {
+    double a;
+    double b;
+};
+
+void event(Test &test, double time) {
+    std::cout << test.a << ", " << test.b << ", time: " << time <<" FROM EVENT\n";
 }
 
 int main() {
-    String<100> str = "test1234";
+    Manager manager;
 
-    String<150> str2 = str;
+    Publisher<Test> anglePub(manager, "Angle");
 
-    manipulateString(str);
-    std::cout << str2.c_str() << " output\n";
+    Subscriber<Test, 5> angleSub(manager, "Angle");
 
+    angleSub.setCallback(event);
 
+    anglePub.publish({123, 3}, 4);
+    anglePub.publish({432.32423, 9.1}, 3424.4);
+
+    while (angleSub.available()) {
+        std::cout << angleSub.peek().a << ", " << angleSub.peek().b << ", " << angleSub.peekTime() << "\n";
+        angleSub.pop();
+    }
 
 }
-
-
-//#include <iostream>
-//#include <iomanip>
-//#include "psl.h"
-//#include "String2.h"
-//#include "Array.h"
-//#include "Converter.h"
-//#include "pub_sub/Manager.h"
-//#include "pub_sub/Publisher.h"
-//#include "pub_sub/Subscriber.h"
-//
-//
-//using namespace psl;
-//
-//struct Test {
-//    double a;
-//    double b;
-//};
-//
-//void event(Test &test) {
-//    std::cout << test.a << ", " << test.b << " FROM EVENT\n";
-//}
-//
-//int main() {
-//    Manager manager;
-//
-//    Publisher<Test> anglePub(manager, "Angle");
-//
-//    Subscriber<Test, 5> angleSub(manager, "Angle");
-//
-//    angleSub.setCallback(event);
-//
-//    anglePub.publish({123, 3}, 4);
-//    anglePub.publish({432.32423, 9.1});
-//
-//    while (angleSub.available()) {
-//        std::cout << angleSub.peek().a << ", " << angleSub.peek().b << ", " << angleSub.peekTime() << "\n";
-//        angleSub.pop();
-//    }
-//
-//}
 //
 ////void printArray(const Array<String2 *> &array) {
 ////    for (int i = 0; i < array.m_lengthMemory(); i++) {

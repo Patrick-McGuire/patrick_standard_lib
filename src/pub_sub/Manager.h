@@ -6,6 +6,7 @@
 #include "../Function.h"
 #include "functional"
 #include <iostream>
+#include <cstring>
 
 #ifndef PSL_PUB_SUB_NAME_SIZE
 #define PSL_PUB_SUB_NAME_SIZE 20

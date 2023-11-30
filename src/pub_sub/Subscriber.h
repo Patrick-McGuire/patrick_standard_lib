@@ -3,7 +3,7 @@
 #define PATRICK_STANDARD_LIB_SUBSCRIBER_H
 
 #include "Manager.h"
-#include "Ringbuffer.h"
+#include "../Ringbuffer.h"
 #include "functional"
 
 namespace psl {
@@ -18,6 +18,10 @@ namespace psl {
                 t = t_;
                 time = time_;
             }
+
+            TimeSeries() {
+
+            }
         };
 
         int m_id;
@@ -31,7 +35,7 @@ namespace psl {
                 buff.pop_front();
             buff.push_back({*((T *) data), time});
             if (userFunc)
-                userFunc(*((T *) data));
+                userFunc(*((T *) data), time);
         }
 
     public:
@@ -40,7 +44,7 @@ namespace psl {
             m_name = m_manager.getName(m_id);
         }
 
-        void setCallback(std::function<void(T &)> userFunc_) {
+        void setCallback(std::function<void(T &, double )> userFunc_) {
             userFunc = userFunc_;
         }
 
@@ -53,7 +57,7 @@ namespace psl {
         }
 
         double peekTime() {
-            return buff.front().t;
+            return buff.front().time;
         }
 
         void pop() {
