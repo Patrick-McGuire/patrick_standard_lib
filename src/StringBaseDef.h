@@ -7,6 +7,8 @@
 
 
 namespace psl {
+    StringBase::StringBase(char *buff, t_size &length, t_size maxLength) : m_buff(buff), m_length(length), m_maxLength(maxLength) {}
+
     t_size StringBase::length() const {
         return m_length;
     }
@@ -334,8 +336,6 @@ namespace psl {
     double StringBase::toDouble() const {
         return stringToDouble(m_buff);
     }
-
-    StringBase::StringBase(char *buff, t_size &length, t_size maxLength) : m_buff(buff), m_length(length), m_maxLength(maxLength) {}
 
     StringBase &StringBase::reCreate(char *buff, t_size &length, t_size maxLength) {
         m_buff = buff;

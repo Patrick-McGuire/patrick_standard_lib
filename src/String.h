@@ -7,8 +7,6 @@
 #include <cstdlib>
 #include "Converter.h"
 
-
-#define PSL_STRING_HIDE_DANGEROUS_METHODS using StringBase::rawBuffer; using StringBase::rawLength;
 #define PSL_STRING_USE_NON_CONST_METHODS \
 using StringBase::operator=;\
 using StringBase::append;\
@@ -45,6 +43,15 @@ namespace psl {
 
     class StringBase {
     protected:
+        friend class Substr;
+
+        friend class StringRef;
+
+        friend class ConstStringRef;
+
+        template<unsigned N> friend
+        class String;
+
         t_size m_maxLength;
         t_size &m_length;
         char *m_buff = nullptr;
@@ -121,20 +128,11 @@ namespace psl {
         enum : t_size {
             NOT_FOUND = -1,
         };
-
-        t_size &rawLength() const {
-            return m_length;
-        }
-
-        char *rawBuffer() const {
-            return m_buff;
-        }
     };
 
     template<unsigned N>
     class String : public StringBase {
     private:
-        PSL_STRING_HIDE_DANGEROUS_METHODS
         t_size m_lengthMemory = 0;
         char m_storage[N + 1] = "";
 
@@ -149,26 +147,12 @@ namespace psl {
         }
     };
 
-    class StringRef : public StringBase {
-    private:
-        PSL_STRING_HIDE_DANGEROUS_METHODS
-
-    public:
-        PSL_STRING_USE_ALL_METHODS
-
-        template<unsigned N>
-        StringRef(String<N> other) : StringBase(other.rawBuffer(), other.rawLength(), other.maxLength()) {}
-
-        StringRef(const StringRef &other) = default;
-    };
-
 
     class Substr : public StringBase {
     private:
-        PSL_STRING_HIDE_DANGEROUS_METHODS
         t_size m_lengthMemory = 0;
-        char swapChar = '\0';
-        t_size swapIndex = NOT_FOUND;
+        char m_swapChar = '\0';
+        t_size m_swapIndex = NOT_FOUND;
         void transfer();
 
     public:
@@ -183,6 +167,28 @@ namespace psl {
         Substr &operator=(const Substr &) = delete;
         Substr(const Substr &) = delete;
         void release();
+    };
+
+    class StringRef : public StringBase {
+    public:
+        PSL_STRING_USE_ALL_METHODS
+
+        template<unsigned N>
+        StringRef(String<N> &other) : StringBase(other.m_buff, other.m_length, other.m_maxLength) {}
+
+        StringRef(const StringRef &other) = default;
+    };
+
+    class ConstStringRef : public StringBase {
+    public:
+        PSL_STRING_USE_CONST_METHODS
+
+        template<unsigned N>
+        ConstStringRef(String<N> &other) : StringBase(other.m_buff, other.m_length, other.m_maxLength) {}
+
+        ConstStringRef(StringBase &other) : StringBase(other.m_buff, other.m_length, other.m_maxLength) {}
+
+        ConstStringRef(const ConstStringRef &other) = default;
     };
 }
 

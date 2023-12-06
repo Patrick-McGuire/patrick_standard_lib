@@ -2,7 +2,7 @@
 #define PATRICK_STANDARD_LIB_MANAGER_H
 
 #include "../psl.h"
-#include "../Array.h"
+#include "../Array2.h"
 #include "../Function.h"
 #include "functional"
 #include <iostream>
@@ -46,8 +46,8 @@ namespace psl {
     class PubSubManager {
         int nextID = 0;
 
-        Array<TopicInfo> &topics;
-        Array<SubscriberInfo> &subs;
+        Array2<TopicInfo> &topics;
+        Array2<SubscriberInfo> &subs;
 
         int getFirstSubscriber(const char *name) {
             for (int i = 0; i < topics.length(); i++) {
@@ -71,7 +71,7 @@ namespace psl {
         }
 
     public:
-        PubSubManager(Array<TopicInfo> &topics_, Array<SubscriberInfo> &subs_) : topics(topics_), subs(subs_) {
+        PubSubManager(Array2<TopicInfo> &topics_, Array2<SubscriberInfo> &subs_) : topics(topics_), subs(subs_) {
 
         }
 
@@ -131,8 +131,8 @@ namespace psl {
     template<unsigned MaxTopics, unsigned MaxSubscribers>
     class PubSubManager::size final : public PubSubManager {
     private:
-        Array<TopicInfo>::size<10> topicsStorage;
-        Array<SubscriberInfo>::size<10> subsStorage;
+        Array2<TopicInfo>::size<10> topicsStorage;
+        Array2<SubscriberInfo>::size<10> subsStorage;
     public:
         size() : PubSubManager(topicsStorage, subsStorage) {}
     };

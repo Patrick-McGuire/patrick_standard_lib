@@ -6,32 +6,32 @@
 
 namespace psl {
 
-    Substr::Substr() : StringBase(&swapChar, m_lengthMemory, 0) {
+    Substr::Substr() : StringBase(&m_swapChar, m_lengthMemory, 0) {
 
     }
 
-    Substr::Substr(StringBase &str, t_size start, t_size len) : m_lengthMemory(len), StringBase(str.rawBuffer() + start, m_lengthMemory, len) {
+    Substr::Substr(StringBase &str, t_size start, t_size len) : m_lengthMemory(len), StringBase(str.m_buff + start, m_lengthMemory, len) {
         // Insert null term
-        swapIndex = len;
-        swapChar = (*this)[swapIndex];
-        (*this)[swapIndex] = '\0';
+        m_swapIndex = len;
+        m_swapChar = (*this)[m_swapIndex];
+        (*this)[m_swapIndex] = '\0';
     }
 
-    Substr::Substr(Substr &&other) noexcept: StringBase(other.rawBuffer(), m_lengthMemory, other.maxLength()) {
+    Substr::Substr(Substr &&other) noexcept: StringBase(other.m_buff, m_lengthMemory, other.maxLength()) {
         m_lengthMemory = other.m_lengthMemory;
-        swapIndex = other.swapIndex;
-        swapChar = other.swapChar;
+        m_swapIndex = other.m_swapIndex;
+        m_swapChar = other.m_swapChar;
         other.transfer();
     }
 
     Substr &Substr::operator=(Substr &&other) noexcept {
         // Recreate the object
         release();
-        reCreate(other.rawBuffer(), m_lengthMemory, other.maxLength());
+        reCreate(other.m_buff, m_lengthMemory, other.maxLength());
         // Copy over
         m_lengthMemory = other.m_lengthMemory;
-        swapIndex = other.swapIndex;
-        swapChar = other.swapChar;
+        m_swapIndex = other.m_swapIndex;
+        m_swapChar = other.m_swapChar;
         other.transfer();
         // Return
         return *this;
@@ -42,12 +42,12 @@ namespace psl {
     }
 
     void Substr::transfer() {
-        swapIndex = NOT_FOUND;
+        m_swapIndex = NOT_FOUND;
     }
 
     void Substr::release() {
-        if (swapIndex != NOT_FOUND) {
-            (*this)[swapIndex] = swapChar;
+        if (m_swapIndex != NOT_FOUND) {
+            (*this)[m_swapIndex] = m_swapChar;
             transfer();
         }
     }
