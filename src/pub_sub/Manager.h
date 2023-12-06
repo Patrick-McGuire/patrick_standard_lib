@@ -2,7 +2,7 @@
 #define PATRICK_STANDARD_LIB_MANAGER_H
 
 #include "../psl.h"
-#include "../Array2.h"
+#include "../Array.h"
 #include "../Function.h"
 #include "functional"
 #include <iostream>
@@ -46,8 +46,8 @@ namespace psl {
     class PubSubManager {
         int nextID = 0;
 
-        Array2<TopicInfo> &topics;
-        Array2<SubscriberInfo> &subs;
+        ArrayRef<TopicInfo> &topics;
+        ArrayRef<SubscriberInfo> &subs;
 
         int getFirstSubscriber(const char *name) {
             for (int i = 0; i < topics.length(); i++) {
@@ -71,7 +71,7 @@ namespace psl {
         }
 
     public:
-        PubSubManager(Array2<TopicInfo> &topics_, Array2<SubscriberInfo> &subs_) : topics(topics_), subs(subs_) {
+        PubSubManager(ArrayRef<TopicInfo> &topics_, ArrayRef<SubscriberInfo> &subs_) : topics(topics_), subs(subs_) {
 
         }
 
@@ -119,7 +119,7 @@ namespace psl {
         }
 
         void publish(int id, void *data, double time) const {
-            int startIndex = topics.getSafe(id).firstIndex;
+            int startIndex = topics.getSafe(id, topics[0]).firstIndex;
             if (startIndex >= 0) {
                 for (int i = startIndex; i < subs.length() && subs[i].id == id; i++) {
                     subs[i].publishFuntion(data, time);
@@ -131,10 +131,12 @@ namespace psl {
     template<unsigned MaxTopics, unsigned MaxSubscribers>
     class PubSubManager::size final : public PubSubManager {
     private:
-        Array2<TopicInfo>::size<10> topicsStorage;
-        Array2<SubscriberInfo>::size<10> subsStorage;
+        Array<TopicInfo, 10> topicsStorage;
+        Array<SubscriberInfo, 10> subsStorage;
+        ArrayRef<TopicInfo> topicsRef = topicsStorage;
+        ArrayRef<SubscriberInfo> subRef = subsStorage;  // @todo see what's up
     public:
-        size() : PubSubManager(topicsStorage, subsStorage) {}
+        size() : PubSubManager(topicsRef, subRef) {}
     };
 
     typedef PubSubManager::size<30, 100> Manager;
