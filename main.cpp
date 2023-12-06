@@ -14,19 +14,23 @@ using namespace psl;
 
 int main() {
     String<100> str = "123456789";
-    String<120> str2;
+    String<120> str2 = str;
+
 
     {
-        Substr2 sub = str.substr2(3, 3);
-        Substr2 sub2 = std::move(sub);
+        Substr sub = str.substr(3, 3);
+        Substr sub2 = std::move(sub);
         std::cout << sub2.c_str() << "\n";
-        sub2.destroy();
+        sub2.release();
         std::cout << sub.c_str() << "\n";
 
-        sub = str.substr2(4, 3);
-        std::cout << sub.c_str() << "\n";
+        sub = str.substr(4, 3);
+
+        std::cout << sub.c_str() << ", " << "" << "\n";
+
     }
     std::cout << str.c_str() << "\n";
+    std::cout << str2.c_str() << "\n";
 
 }
 

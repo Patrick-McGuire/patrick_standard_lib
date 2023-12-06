@@ -4,7 +4,6 @@
 #include <utility>
 #include "psl.h"
 #include "String.h"
-#include "new"
 
 
 namespace psl {
@@ -50,7 +49,7 @@ namespace psl {
         return m_buff;
     }
 
-    bool StringBase::operator==(const StringBase &other) {
+    bool StringBase::operator==(const StringBase &other) const {
         if (m_length == other.m_length) {
             for (int i = 0; i < m_length; i++)
                 if (m_buff[i] != other.m_buff[i])
@@ -60,7 +59,7 @@ namespace psl {
         return false;
     }
 
-    bool StringBase::operator==(const char *str) {
+    bool StringBase::operator==(const char *str) const {
         if (m_length == strlen(str)) {
             for (int i = 0; i < m_length; i++)
                 if (m_buff[i] != str[i])
@@ -70,11 +69,11 @@ namespace psl {
         return false;
     }
 
-    bool StringBase::operator!=(const StringBase &other) {
+    bool StringBase::operator!=(const StringBase &other) const {
         return !operator==(other);
     }
 
-    bool StringBase::operator!=(const char *str) {
+    bool StringBase::operator!=(const char *str) const {
         return !operator==(str);
     }
 
@@ -350,7 +349,7 @@ namespace psl {
         destination.append(m_buff + start, len);
     }
 
-    Substr2 StringBase::substr2(int start, int len) {
+    Substr StringBase::substr(int start, int len) {
         return {*this, start, len};
     }
 

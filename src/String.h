@@ -8,10 +8,40 @@
 #include "Converter.h"
 
 
+#define PSL_STRING_HIDE_DANGEROUS_METHODS using StringBase::rawBuffer; using StringBase::rawLength;
+#define PSL_STRING_USE_NON_CONST_METHODS \
+using StringBase::operator=;\
+using StringBase::append;\
+using StringBase::insert;\
+using StringBase::remove;\
+using StringBase::pop;\
+using StringBase::clear;\
+using StringBase::substr;
+#define PSL_STRING_USE_SUBSCRIPT_OPERATOR using StringBase::operator[];
+#define PSL_STRING_USE_CONST_METHODS \
+using StringBase::length;\
+using StringBase::maxLength;\
+using StringBase::availableLength;\
+using StringBase::validIndex;\
+using StringBase::full;\
+using StringBase::empty;\
+using StringBase::c_str;\
+using StringBase::operator==;\
+using StringBase::operator!=;\
+using StringBase::endsWith;\
+using StringBase::startsWith;\
+using StringBase::indexOf;\
+using StringBase::count;\
+using StringBase::toBool;\
+using StringBase::toInt;\
+using StringBase::toDouble;
+#define PSL_STRING_USE_ALL_METHODS \
+PSL_STRING_USE_SUBSCRIPT_OPERATOR  \
+PSL_STRING_USE_CONST_METHODS       \
+PSL_STRING_USE_NON_CONST_METHODS
+
 namespace psl {
     class Substr;
-
-    class Substr2;
 
     class StringBase {
     protected:
@@ -20,13 +50,6 @@ namespace psl {
         char *m_buff = nullptr;
 
         StringBase &reCreate(char *buff, t_size &length, t_size maxLength); // Allow for construction after the constructor
-
-    public:
-        // Hold constants
-        enum : t_size {
-            NOT_FOUND = -1,
-        };
-
 
         // Constructors
         StringBase(const StringBase &other) = default;
@@ -46,10 +69,10 @@ namespace psl {
         const char *c_str() const;
 
         // Checking
-        bool operator==(const StringBase &other);
-        bool operator==(const char *str);
-        bool operator!=(const StringBase &other);
-        bool operator!=(const char *str);
+        bool operator==(const StringBase &other) const;
+        bool operator==(const char *str) const;
+        bool operator!=(const StringBase &other) const;
+        bool operator!=(const char *str) const;
         bool endsWith(const StringBase &other) const;
         bool endsWith(const char *str) const;
         bool endsWith(char c) const;
@@ -86,31 +109,38 @@ namespace psl {
 
         // Splitting and substring
         void substr(StringBase &destination, int start, int len) const;
-        SubstrData substr(int start, int len);
-        Substr2 substr2(int start, int len);
+        Substr substr(int start, int len);
 
         // Conversion
         bool toBool() const;
         int64_t toInt() const;
         double toDouble() const;
 
-        char *rawBuffer() const {
-            return m_buff;
-        }
+    public:
+        // Hold constants
+        enum : t_size {
+            NOT_FOUND = -1,
+        };
 
         t_size &rawLength() const {
             return m_length;
+        }
+
+        char *rawBuffer() const {
+            return m_buff;
         }
     };
 
     template<unsigned N>
     class String : public StringBase {
     private:
-        using StringBase::rawBuffer;
-        using StringBase::rawLength;
+        PSL_STRING_HIDE_DANGEROUS_METHODS
         t_size m_lengthMemory = 0;
         char m_storage[N + 1] = "";
+
     public:
+        PSL_STRING_USE_ALL_METHODS
+
         String() : StringBase(m_storage, m_lengthMemory, N) {}
 
         template<typename T>
@@ -121,140 +151,43 @@ namespace psl {
 
     class StringRef : public StringBase {
     private:
-        using StringBase::rawBuffer;
-        using StringBase::rawLength;
+        PSL_STRING_HIDE_DANGEROUS_METHODS
+
     public:
+        PSL_STRING_USE_ALL_METHODS
+
         template<unsigned N>
         StringRef(String<N> other) : StringBase(other.rawBuffer(), other.rawLength(), other.maxLength()) {}
 
         StringRef(const StringRef &other) = default;
     };
 
+
     class Substr : public StringBase {
     private:
-        using StringBase::rawBuffer;
-        using StringBase::rawLength;
-        using StringBase::operator=;
-        using StringBase::append;
-        using StringBase::insert;
-        using StringBase::remove;
-        using StringBase::pop;
-        using StringBase::clear;
-
+        PSL_STRING_HIDE_DANGEROUS_METHODS
         t_size m_lengthMemory = 0;
         char swapChar = '\0';
         t_size swapIndex = NOT_FOUND;
-    public:
-        inline void destroy() {
-            if (swapIndex != NOT_FOUND) {
-                (*this)[swapIndex] = swapChar;
-            }
-        }
+        void transfer();
 
     public:
-        Substr(const Substr &) : StringBase(&swapChar, m_lengthMemory, 0) {}
+        PSL_STRING_USE_CONST_METHODS
+        PSL_STRING_USE_SUBSCRIPT_OPERATOR
 
-        Substr() : StringBase(&swapChar, m_lengthMemory, 0) {}
-
+        Substr();
+        Substr(Substr &&other) noexcept;
+        Substr(StringBase &str, t_size start, t_size len);
+        Substr &operator=(Substr &&other) noexcept;
+        ~Substr();
         Substr &operator=(const Substr &) = delete;
-
-        Substr(SubstrData &&data) : m_lengthMemory(data.len), StringBase(data.str.rawBuffer() + data.start, m_lengthMemory, data.len) {
-            // Insert null term
-            swapIndex = data.len;
-            swapChar = (*this)[swapIndex];
-            (*this)[swapIndex] = '\0';
-        }
-
-        Substr &operator=(SubstrData &&data) {
-            // Recreate the object
-            destroy();
-            m_lengthMemory = data.len;
-            reCreate(data.str.rawBuffer() + data.start, m_lengthMemory, data.len);
-            // Insert null term
-            swapIndex = data.len;
-            swapChar = (*this)[swapIndex];
-            (*this)[swapIndex] = '\0';
-
-            // Return
-            return *this;
-        }
-
-        ~Substr() {
-            destroy();
-        }
+        Substr(const Substr &) = delete;
+        void release();
     };
-
-
-    class Substr2 : public StringBase {
-    private:
-        using StringBase::rawBuffer;
-        using StringBase::rawLength;
-        using StringBase::operator=;
-        using StringBase::append;
-        using StringBase::insert;
-        using StringBase::remove;
-        using StringBase::pop;
-        using StringBase::clear;
-        using StringBase::substr2;
-
-        t_size m_lengthMemory = 0;
-        char swapChar = '\0';
-        t_size swapIndex = NOT_FOUND;
-
-    public:
-        Substr2() : StringBase(&swapChar, m_lengthMemory, 0) {}
-
-        Substr2(Substr2 &&other) noexcept: StringBase(other.rawBuffer(), m_lengthMemory, other.maxLength()) {
-            std::cout << "Moving" << "\n";
-            m_lengthMemory = other.m_lengthMemory;
-            swapIndex = other.swapIndex;
-            swapChar = other.swapChar;
-            other.transfer();
-        }
-
-        Substr2(StringBase &str, t_size start, t_size len) : m_lengthMemory(len), StringBase(str.rawBuffer() + start, m_lengthMemory, len) {
-            // Insert null term
-            swapIndex = len;
-            swapChar = (*this)[swapIndex];
-            (*this)[swapIndex] = '\0';
-        }
-
-        void transfer() {
-            swapIndex = NOT_FOUND;
-        }
-
-        void destroy() {
-            if (swapIndex != NOT_FOUND) {
-                (*this)[swapIndex] = swapChar;
-                transfer();
-            }
-        }
-
-        Substr2 &operator=(Substr2 &&other) noexcept {
-            // Recreate the object
-            destroy();
-            m_lengthMemory = other.length();
-            reCreate(other.rawBuffer(), m_lengthMemory, other.length());
-            // Insert null term
-            swapIndex = m_lengthMemory;
-            swapChar = (*this)[swapIndex];
-            (*this)[swapIndex] = '\0';
-            other.transfer();
-            // Return
-            return *this;
-        }
-
-        Substr2 &operator=(const Substr2 &) = delete;
-        Substr2(const Substr2 &) = delete;
-
-        ~Substr2() {
-            destroy();
-        }
-    };
-
 }
 
 #include "StringBaseDef.h"
+#include "SubStringDef.h"
 
 
 #endif //PATRICK_STANDARD_LIB_String22_H

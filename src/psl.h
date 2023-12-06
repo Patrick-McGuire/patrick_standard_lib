@@ -1,9 +1,15 @@
 #ifndef PMCGUIRESTANDARD_PMCGUIRE_H
 #define PMCGUIRESTANDARD_PMCGUIRE_H
 
+#include "iostream"
+
 namespace psl {
     typedef int t_size;
     typedef int t_index;
+
+    inline void println(const char *str) {
+        std::cout << str << "\n";
+    }
 
     template<unsigned...>
     struct compile_time_sum;
