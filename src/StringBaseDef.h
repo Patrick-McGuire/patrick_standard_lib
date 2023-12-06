@@ -1,9 +1,10 @@
-#ifndef PATRICK_STANDARD_LIB_STRINGDEF_H
-#define PATRICK_STANDARD_LIB_STRINGDEF_H
+#ifndef PATRICK_STANDARD_LIB_STRINGBASEDEF_H
+#define PATRICK_STANDARD_LIB_STRINGBASEDEF_H
 
 #include <utility>
 #include "psl.h"
 #include "String.h"
+#include "new"
 
 
 namespace psl {
@@ -16,31 +17,31 @@ namespace psl {
     }
 
     t_size StringBase::availableLength() const {
-        return maxLength() - length();
+        return m_maxLength - m_length;
     }
 
     bool StringBase::validIndex(t_size i) const {
-        return i >= 0 && i < length();
+        return i >= 0 && i < m_length;
     }
 
     bool StringBase::full() const {
-        return length() == maxLength();
+        return m_length == m_maxLength;
     }
 
     bool StringBase::empty() const {
-        return length() == 0;
+        return m_length == 0;
     }
 
     char &StringBase::operator[](t_size i) {
         // Handle negative incidences
-        if (i < 0) i = length() + i;
+        if (i < 0) i = m_length + i;
         // Check for valid index
         return validIndex(i) ? m_buff[i] : m_buff[m_length];
     }
 
     const char &StringBase::operator[](t_size i) const {
         // Handle negative incidences
-        if (i < 0) i = length() + i;
+        if (i < 0) i = m_length + i;
         // Check for valid index
         return validIndex(i) ? m_buff[i] : m_buff[m_length];
     }
@@ -50,8 +51,8 @@ namespace psl {
     }
 
     bool StringBase::operator==(const StringBase &other) {
-        if (length() == other.length()) {
-            for (int i = 0; i < length(); i++)
+        if (m_length == other.m_length) {
+            for (int i = 0; i < m_length; i++)
                 if (m_buff[i] != other.m_buff[i])
                     return false;
             return true;
@@ -60,8 +61,8 @@ namespace psl {
     }
 
     bool StringBase::operator==(const char *str) {
-        if (length() == strlen(str)) {
-            for (int i = 0; i < length(); i++)
+        if (m_length == strlen(str)) {
+            for (int i = 0; i < m_length; i++)
                 if (m_buff[i] != str[i])
                     return false;
             return true;
@@ -91,12 +92,12 @@ namespace psl {
     }
 
     bool StringBase::endsWith(char c) const {
-        return !empty() && m_buff[length() - 1] == c;
+        return !empty() && m_buff[m_length - 1] == c;
     }
 
     bool StringBase::startsWith(const StringBase &other) const {
-        if (length() >= other.length()) {
-            for (int i = 0; i < other.length(); i++)
+        if (m_length >= other.m_length) {
+            for (int i = 0; i < other.m_length; i++)
                 if (m_buff[i] != other.m_buff[i])
                     return false;
             return true;
@@ -105,7 +106,7 @@ namespace psl {
     }
 
     bool StringBase::startsWith(const char *str) const {
-        for (int i = 0; i < length(); i++) {
+        for (int i = 0; i < m_length; i++) {
             if (str[i] == '\0' || m_buff[i] != str[i])
                 return false;
         }
@@ -235,6 +236,14 @@ namespace psl {
         m_buff[0] = '\0';
     }
 
+    StringBase &StringBase::operator=(const StringBase &other) {
+        if (&other != this) {
+            clear();
+            append(other);
+        }
+        return *this;
+    }
+
     template<typename T>
     StringBase &StringBase::operator=(const T &other) {
         clear();
@@ -249,8 +258,7 @@ namespace psl {
     t_size StringBase::indexOf(const char *str, int i) const {
         char *ptr = m_buff;
         while (i-- > 0 && (ptr = strstr(ptr, str)) != nullptr);
-        return ptr != nullptr ? ptr - c_str() : -1;
-        return false;
+        return ptr != nullptr ? (t_size) (ptr - m_buff) : NOT_FOUND;
     }
 
     t_size StringBase::indexOf(char c, int i) const {
@@ -261,7 +269,7 @@ namespace psl {
                         return j;
             }
         }
-        return -1;
+        return NOT_FOUND;
     }
 
     t_size StringBase::count(const StringBase &other) const {
@@ -330,11 +338,23 @@ namespace psl {
 
     StringBase::StringBase(char *buff, t_size &length, t_size maxLength) : m_buff(buff), m_length(length), m_maxLength(maxLength) {}
 
+    StringBase &StringBase::reCreate(char *buff, t_size &length, t_size maxLength) {
+        m_buff = buff;
+        m_length = length;
+        m_maxLength = maxLength;
+        return *this;
+    }
+
     void StringBase::substr(StringBase &destination, int start, int len) const {
         destination.clear();
         destination.append(m_buff + start, len);
     }
 
+    Substr2 StringBase::substr2(int start, int len) {
+        return {*this, start, len};
+    }
+
+
 }
 
-#endif //PATRICK_STANDARD_LIB_STRINGDEF_H
+#endif //PATRICK_STANDARD_LIB_STRINGBASEDEF_H

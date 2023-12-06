@@ -23,6 +23,10 @@ namespace psl {
             m_manager.publish(m_id, &t, time);
         }
 
+        void publish(T *t, double time = -1) {
+            m_manager.publish(m_id, t, time);
+        }
+
     };
 
 } // psl
