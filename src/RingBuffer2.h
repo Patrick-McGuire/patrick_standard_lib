@@ -3,9 +3,9 @@
 
 namespace psl {
     template<typename T, unsigned N>
-    class Ringbuffer {
+    class Ringbuffer2 {
     public:
-        explicit Ringbuffer() = default;
+        explicit Ringbuffer2() = default;
 
         const T &get(int index) {
             return m_buff[(m_start + index) % m_maxSize];

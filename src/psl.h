@@ -11,6 +11,21 @@ namespace psl {
         std::cout << str << "\n";
     }
 
+    template<typename T>
+    struct is_signed_type {
+        static const bool value = T(-1) < T(0);
+    };
+
+    template<typename T>
+    T integer_max_value() {
+        return ((T)1 << (sizeof(T) * 8 - (is_signed_type<T>::value ? 2 : 1))) + (((T)1 << (sizeof(T) * 8 - (is_signed_type<T>::value ? 2 : 1))) - 1);
+    }
+
+    template<typename T>
+    T integer_min_value() {
+        return is_signed_type<T>::value ? -integer_max_value<T>() - 1 : 0;
+    }
+
     template<unsigned...>
     struct compile_time_sum;
 
@@ -25,16 +40,21 @@ namespace psl {
     };
 
 
-    template <int N, typename... T>
+    template<int N, typename... T>
     struct variadic_nth_type;
 
-    template <typename T0, typename... T>
+    template<typename T0, typename... T>
     struct variadic_nth_type<0, T0, T...> {
         typedef T0 type;
     };
-    template <int N, typename T0, typename... T>
+    template<int N, typename T0, typename... T>
     struct variadic_nth_type<N, T0, T...> {
         typedef typename variadic_nth_type<N - 1, T...>::type type;
+    };
+
+    enum : t_size {
+        INDEX_ERROR = -1,
+        OVERFLOW_ERROR = -2,
     };
 }
 

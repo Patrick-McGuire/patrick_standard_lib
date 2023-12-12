@@ -2,7 +2,7 @@
 #define PATRICK_STANDARD_LIB_PUBLISHER_H
 
 #include "Manager.h"
-#include "../Function.h"
+#include "../rando/Function.h"
 
 namespace psl {
 

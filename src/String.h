@@ -25,6 +25,7 @@ using StringBase::validIndex;\
 using StringBase::full;\
 using StringBase::empty;\
 using StringBase::c_str;\
+using StringBase::operator const char *;\
 using StringBase::operator==;\
 using StringBase::operator!=;\
 using StringBase::endsWith;\
@@ -46,8 +47,6 @@ namespace psl {
     protected:
         friend class Substr;
 
-        friend class StringRef;
-
         friend class ConstStringRef;
 
         template<unsigned N> friend
@@ -64,17 +63,18 @@ namespace psl {
         StringBase(char *buff, t_size &length, t_size maxLength);
 
         // Capacity
-        t_size length() const;
-        t_size maxLength() const;
-        t_size availableLength() const;
-        bool validIndex(t_size i) const;
-        bool full() const;
-        bool empty() const;
+        inline t_size length() const;
+        inline t_size maxLength() const;
+        inline t_size availableLength() const;
+        inline bool validIndex(t_size i) const;
+        inline bool full() const;
+        inline bool empty() const;
 
         // Access
         char &operator[](t_size i);
         const char &operator[](t_size i) const;
         const char *c_str() const;
+        operator const char *() const;
 
         // Checking
         bool operator==(const StringBase &other) const;
@@ -148,7 +148,6 @@ namespace psl {
         }
     };
 
-
     class Substr : public StringBase {
     private:
         t_size m_lengthMemory = 0;
@@ -170,26 +169,23 @@ namespace psl {
         void release();
     };
 
-    class StringRef : public StringBase {
-    public:
-        PSL_STRING_USE_ALL_METHODS
-
-        template<unsigned N>
-        StringRef(String<N> &other) : StringBase(other.m_buff, other.m_length, other.m_maxLength) {}
-
-        StringRef(const StringRef &other) = default;
-    };
-
     class ConstStringRef : public StringBase {
     public:
         PSL_STRING_USE_CONST_METHODS
 
-        template<unsigned N>
-        ConstStringRef(String<N> &other) : StringBase(other.m_buff, other.m_length, other.m_maxLength) {}
-
-        ConstStringRef(StringBase &other) : StringBase(other.m_buff, other.m_length, other.m_maxLength) {}
+        ConstStringRef(const StringBase &other) : StringBase(other.m_buff, other.m_length, other.m_maxLength) {}
 
         ConstStringRef(const ConstStringRef &other) = default;
+    };
+
+    class StringRef : public ConstStringRef {
+    public:
+        PSL_STRING_USE_ALL_METHODS
+
+        template<unsigned N>
+        StringRef(String<N> &other) : ConstStringRef(other) {}
+
+        StringRef(const StringRef &other) = default;
     };
 }
 
@@ -242,6 +238,10 @@ namespace psl {
     }
 
     const char *StringBase::c_str() const {
+        return m_buff;
+    }
+
+    StringBase::operator const char *() const {
         return m_buff;
     }
 
@@ -524,7 +524,7 @@ namespace psl {
     }
 
     int64_t StringBase::toInt() const {
-        return atoi(m_buff);
+        return strtol(m_buff, NULL, m_length);
     }
 
     double StringBase::toDouble() const {
@@ -546,9 +546,8 @@ namespace psl {
     Substr StringBase::substr(int start, int len) {
         return {*this, start, len};
     }
-
-
 }
+
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 ////        Substr Implementation
@@ -592,7 +591,10 @@ namespace psl {
     }
 
     void Substr::transfer() {
+        m_lengthMemory = 0;
+        m_swapChar = '\0';
         m_swapIndex = NOT_FOUND;
+        reCreate(&m_swapChar, m_lengthMemory, 0);
     }
 
     void Substr::release() {

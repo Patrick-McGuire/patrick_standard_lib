@@ -3,7 +3,7 @@
 #define PATRICK_STANDARD_LIB_SUBSCRIBER_H
 
 #include "Manager.h"
-#include "../Ringbuffer.h"
+#include "../RingBuffer2.h"
 #include "functional"
 
 namespace psl {
@@ -27,7 +27,7 @@ namespace psl {
         int m_id;
         const char *m_name;
         PubSubManager &m_manager;
-        Ringbuffer<TimeSeries, BufferSize> buff;
+        Ringbuffer2<TimeSeries, BufferSize> buff;
         std::function<void(T &, double)> userFunc;
 
         void onNewData(void *data, double time) {

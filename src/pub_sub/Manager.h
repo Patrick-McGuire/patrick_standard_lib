@@ -3,7 +3,7 @@
 
 #include "../psl.h"
 #include "../Array.h"
-#include "../Function.h"
+#include "../rando/Function.h"
 #include "functional"
 #include <iostream>
 #include <cstring>
@@ -110,16 +110,16 @@ namespace psl {
             int id = getAddTopicID(name);
             int firstOfTopic = getFirstSubscriber(name);
             if (firstOfTopic < 0) {
-                subs.appendSafe({id, onPublish});
+                subs.append({id, onPublish});
             } else {
-                subs.insertSafe(firstOfTopic + 1, {id, onPublish});
+                subs.insert(firstOfTopic + 1, {id, onPublish});
             }
             calculateFirstSubs();
             return id;
         }
 
         void publish(int id, void *data, double time) const {
-            int startIndex = topics.getSafe(id, topics[0]).firstIndex;
+            int startIndex = topics[id].firstIndex;
             if (startIndex >= 0) {
                 for (int i = startIndex; i < subs.length() && subs[i].id == id; i++) {
                     subs[i].publishFuntion(data, time);
