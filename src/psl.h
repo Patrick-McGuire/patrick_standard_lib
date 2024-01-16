@@ -4,6 +4,9 @@
 #include "iostream"
 
 namespace psl {
+    using std::max;
+    using std::min;
+
     typedef int t_size;
     typedef int t_index;
 

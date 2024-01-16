@@ -1,73 +1,48 @@
 #include <iostream>
-//#include <iomanip>
+#include <iomanip>
 #include "src/psl.h"
 #include "src/String.h"
-//#include "src/Array2.h"
 #include "src/Converter.h"
 #include "src/pub_sub/Manager.h"
 #include "src/pub_sub/Publisher.h"
 #include "src/pub_sub/Subscriber.h"
 #include "src/Array.h"
+#include "src/CsvParser.h"
 #include <string>
+
 
 using namespace psl;
 
 
-#include "iomanip"
-
-int main() {
-//    char buff[100];
-//    memset(buff, 0, 100);
-//    int a = doubleToString(255.101, buff, 50, 100, 16);
-//    std::cout << &buff[0] << ", " << a << "\n";
-
-//    double aa = 123456789.123456789123456789;
-//    aa += ;
-//    std::cout << std::setprecision(100) << aa <<  "\n";
-
-    std::cout << std::setprecision(100);
-    bool success;
-    double result = stringToDouble("3794F7.AF83BDA", &success, 16);
-    std::cout << std::setprecision(100) << result << ", " << double(0.) << ", " << success << "\n";
-
-
-//    std::cout << integer_min_value<unsigned long long>() << "\n";
-//    9223372036854775807
-//    18446744073709551615
-//    std::cout << willOverflow<uint64_t>((uint64_t)1844674407370955161, '6') << "\n";
-//    typedef int64_t T;
-//    bool success;
-//    T result = stringToInteger<T>("3794F7", &success, 16);
-//    std::cout << result << ", " << (int) success << "\n";
-
+void constFunc(ConstStringRef ref) {
 
 }
 
+void func(StringRef ref) {
 
-//void constFunc(ConstStringRef ref) {
-//
-//}
-//
-//void func(StringRef ref) {
-//
-//}
-//
-//int main() {
+}
+
+int main() {
+    String<300> str = "Val1,Val2,Val3,123,456,.123,false\n";
+    CsvParser parser(str);
+
+    parser.paresLine();
+    parser.printNodes();
+
+
+
+
 //    String<100> str = "123456789";
 //    const String<120> str2 = str;
+//    str.append("ABCD");
 //
-//    StringRef ref(str);
-////    StringRef ref2(str2);
-//    ConstStringRef ref3(str2);
-//
-//    ConstStringRef ref22 = ref;
-////    StringRef ref33 = ref3;
+//    CsvParser parser = str;
+
+    return 0;
+
 //    {
 //        Substr sub = str.substr(3, 3);
-////        func(str.substr(3, 3));
-////        constFunc(str.substr(3, 3));
-////        StringRef aRef = sub;
-//        ConstStringRef aaRef = sub;
+//
 //
 //        Substr sub2 = std::move(sub);
 //
@@ -83,8 +58,8 @@ int main() {
 //    std::cout << str2 << "\n";
 //
 //    return 0;
-//}
-//
+}
+
 ////struct Test {
 ////    double a;
 ////    double b;

@@ -1,12 +1,10 @@
-#ifndef PATRICK_STANDARD_LIB_String22_H
-#define PATRICK_STANDARD_LIB_String22_H
+#ifndef PATRICK_STANDARD_LIB_String_H
+#define PATRICK_STANDARD_LIB_String_H
 
 #include "psl.h"
 #include <cstring>
 #include <cstdint>
-#include <cstdlib>
 #include "Converter.h"
-#include <utility>
 
 #define PSL_STRING_USE_NON_CONST_METHODS \
 using StringBase::operator=;\
@@ -30,7 +28,7 @@ using StringBase::operator==;\
 using StringBase::operator!=;\
 using StringBase::endsWith;\
 using StringBase::startsWith;\
-using StringBase::indexOf;\
+using StringBase::nthIndexOf;\
 using StringBase::count;\
 using StringBase::toBool;\
 using StringBase::toInt;\
@@ -49,80 +47,130 @@ namespace psl {
 
         friend class ConstStringRef;
 
-        template<unsigned N> friend
+        template<unsigned N>
+        friend
         class String;
 
         t_size m_maxLength;
         t_size &m_length;
         char *m_buff = nullptr;
 
-        StringBase &reCreate(char *buff, t_size &length, t_size maxLength); // Allow for construction after the constructor
+        StringBase &reCreate(char *buff, const t_size &length, t_size maxLength);
+
+        // Allow for construction after the constructor
 
         // Constructors
         StringBase(const StringBase &other) = default;
+
         StringBase(char *buff, t_size &length, t_size maxLength);
 
         // Capacity
         inline t_size length() const;
+
         inline t_size maxLength() const;
+
         inline t_size availableLength() const;
+
         inline bool validIndex(t_size i) const;
+
         inline bool full() const;
+
         inline bool empty() const;
 
         // Access
         char &operator[](t_size i);
+
         const char &operator[](t_size i) const;
+
         const char *c_str() const;
+
         operator const char *() const;
 
         // Checking
         bool operator==(const StringBase &other) const;
+
         bool operator==(const char *str) const;
+
         bool operator!=(const StringBase &other) const;
+
         bool operator!=(const char *str) const;
+
         bool endsWith(const StringBase &other) const;
+
         bool endsWith(const char *str) const;
+
         bool endsWith(char c) const;
+
         bool startsWith(const StringBase &other) const;
+
         bool startsWith(const char *str) const;
+
         bool startsWith(char c) const;
 
         // Modifiers
         bool append(const StringBase &other);
+
         bool append(const char *str);
+
         bool append(const char *str, int n);
+
         bool append(char c);
-        bool append(int num);
-        bool append(double num, int digits = 4);
+
+        bool append(int num, uint8_t base = 10);
+
+        bool append(int64_t num, uint8_t base = 10);
+
+        bool append(uint64_t num, uint8_t base = 10);
+
+        bool append(double num, int digits = 4, uint8_t base = 10);
+
         bool insert(t_size i, const StringBase &other);
+
         bool insert(t_size i, const char *str);
+
         bool insert(t_size i, char c);
+
         bool remove(int i, int len = 1);
+
         bool pop();
+
         void clear();
 
         // Assigment
-        StringBase &operator=(const StringBase &other);     // Must define the copy assigment operator explicitly
+        StringBase &operator=(const StringBase &other); // Must define the copy assigment operator explicitly
         template<typename T>
         StringBase &operator=(const T &other);
 
         // Location
-        t_size indexOf(const StringBase &other, int i = 0) const;
-        t_size indexOf(const char *str, int i = 0) const;
+        t_size nthIndexOf(const StringBase &other, int i = 0) const;
+
+        t_size nthIndexOf(const char *str, int i = 0) const;
+
+        t_size nthIndexOf(char c, int i = 0) const;
+
         t_size indexOf(char c, int i = 0) const;
+
         t_size count(const StringBase &other) const;
+
         t_size count(const char *str) const;
+
         t_size count(char c) const;
 
         // Splitting and substring
         void substr(StringBase &destination, int start, int len) const;
+
         Substr substr(int start, int len);
 
         // Conversion
-        bool toBool() const;
-        int64_t toInt() const;
-        double toDouble() const;
+        bool toBool(bool *success = nullptr) const;
+
+        int toInt(bool *success = nullptr, uint8_t base = 10) const;
+
+        int64_t toInt64(bool *success = nullptr, uint8_t base = 10) const;
+
+        uint64_t toUInt64(bool *success = nullptr, uint8_t base = 10) const;
+
+        double toDouble(bool *success = nullptr, uint8_t base = 10) const;
 
     public:
         // Hold constants
@@ -140,7 +188,8 @@ namespace psl {
     public:
         PSL_STRING_USE_ALL_METHODS
 
-        String() : StringBase(m_storage, m_lengthMemory, N) {}
+        String() : StringBase(m_storage, m_lengthMemory, N) {
+        }
 
         template<typename T>
         String(const T &input) : StringBase(m_storage, m_lengthMemory, N) {
@@ -153,6 +202,7 @@ namespace psl {
         t_size m_lengthMemory = 0;
         char m_swapChar = '\0';
         t_size m_swapIndex = NOT_FOUND;
+
         void transfer();
 
     public:
@@ -160,12 +210,19 @@ namespace psl {
         PSL_STRING_USE_SUBSCRIPT_OPERATOR
 
         Substr();
+
         Substr(Substr &&other) noexcept;
-        Substr(StringBase &str, t_size start, t_size len);
+
+        Substr(const StringBase &str, t_size start, t_size len);
+
         Substr &operator=(Substr &&other) noexcept;
+
         ~Substr();
+
         Substr &operator=(const Substr &) = delete;
+
         Substr(const Substr &) = delete;
+
         void release();
     };
 
@@ -173,7 +230,8 @@ namespace psl {
     public:
         PSL_STRING_USE_CONST_METHODS
 
-        ConstStringRef(const StringBase &other) : StringBase(other.m_buff, other.m_length, other.m_maxLength) {}
+        ConstStringRef(const StringBase &other) : StringBase(other.m_buff, other.m_length, other.m_maxLength) {
+        }
 
         ConstStringRef(const ConstStringRef &other) = default;
     };
@@ -183,12 +241,12 @@ namespace psl {
         PSL_STRING_USE_ALL_METHODS
 
         template<unsigned N>
-        StringRef(String<N> &other) : ConstStringRef(other) {}
+        StringRef(String<N> &other) : ConstStringRef(other) {
+        }
 
         StringRef(const StringRef &other) = default;
     };
 }
-
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -197,7 +255,8 @@ namespace psl {
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 namespace psl {
-    StringBase::StringBase(char *buff, t_size &length, t_size maxLength) : m_buff(buff), m_length(length), m_maxLength(maxLength) {}
+    inline StringBase::StringBase(char *buff, t_size &length, const t_size maxLength) : m_maxLength(maxLength), m_length(length), m_buff(buff) {
+    }
 
     t_size StringBase::length() const {
         return m_length;
@@ -223,29 +282,29 @@ namespace psl {
         return m_length == 0;
     }
 
-    char &StringBase::operator[](t_size i) {
+    inline char &StringBase::operator[](t_size i) {
         // Handle negative incidences
         if (i < 0) i = m_length + i;
         // Check for valid index
         return validIndex(i) ? m_buff[i] : m_buff[m_length];
     }
 
-    const char &StringBase::operator[](t_size i) const {
+    inline const char &StringBase::operator[](t_size i) const {
         // Handle negative incidences
         if (i < 0) i = m_length + i;
         // Check for valid index
         return validIndex(i) ? m_buff[i] : m_buff[m_length];
     }
 
-    const char *StringBase::c_str() const {
+    inline const char *StringBase::c_str() const {
         return m_buff;
     }
 
-    StringBase::operator const char *() const {
+    inline StringBase::operator const char *() const {
         return m_buff;
     }
 
-    bool StringBase::operator==(const StringBase &other) const {
+    inline bool StringBase::operator==(const StringBase &other) const {
         if (m_length == other.m_length) {
             for (int i = 0; i < m_length; i++)
                 if (m_buff[i] != other.m_buff[i])
@@ -255,7 +314,7 @@ namespace psl {
         return false;
     }
 
-    bool StringBase::operator==(const char *str) const {
+    inline bool StringBase::operator==(const char *str) const {
         if (m_length == strlen(str)) {
             for (int i = 0; i < m_length; i++)
                 if (m_buff[i] != str[i])
@@ -265,32 +324,32 @@ namespace psl {
         return false;
     }
 
-    bool StringBase::operator!=(const StringBase &other) const {
+    inline bool StringBase::operator!=(const StringBase &other) const {
         return !operator==(other);
     }
 
-    bool StringBase::operator!=(const char *str) const {
+    inline bool StringBase::operator!=(const char *str) const {
         return !operator==(str);
     }
 
-    bool StringBase::endsWith(const StringBase &other) const {
+    inline bool StringBase::endsWith(const StringBase &other) const {
         // @todo check
         if (m_length < other.m_length || !m_buff || !other.m_buff) return false;
         return strcmp(&m_buff[m_length - other.m_length], other.m_buff) == 0;
     }
 
-    bool StringBase::endsWith(const char *str) const {
+    inline bool StringBase::endsWith(const char *str) const {
         // @todo check
-        t_size otherLength = strlen(str);
+        const auto otherLength = t_size(strlen(str));
         if (m_length < otherLength || !m_buff || !str) return false;
         return strcmp(&m_buff[m_length - otherLength], str) == 0;
     }
 
-    bool StringBase::endsWith(char c) const {
+    inline bool StringBase::endsWith(char c) const {
         return !empty() && m_buff[m_length - 1] == c;
     }
 
-    bool StringBase::startsWith(const StringBase &other) const {
+    inline bool StringBase::startsWith(const StringBase &other) const {
         if (m_length >= other.m_length) {
             for (int i = 0; i < other.m_length; i++)
                 if (m_buff[i] != other.m_buff[i])
@@ -300,7 +359,7 @@ namespace psl {
         return false;
     }
 
-    bool StringBase::startsWith(const char *str) const {
+    inline bool StringBase::startsWith(const char *str) const {
         for (int i = 0; i < m_length; i++) {
             if (str[i] == '\0' || m_buff[i] != str[i])
                 return false;
@@ -308,11 +367,11 @@ namespace psl {
         return true;
     }
 
-    bool StringBase::startsWith(char c) const {
+    inline bool StringBase::startsWith(const char c) const {
         return m_buff[0] == c;
     }
 
-    bool StringBase::append(const StringBase &other) {
+    inline bool StringBase::append(const StringBase &other) {
         const char *str = other.m_buff;
         for (const char *end = str + other.m_length; !full() && str != end; str++)
             m_buff[m_length++] = *str;
@@ -320,21 +379,21 @@ namespace psl {
         return *str == '\0';
     }
 
-    bool StringBase::append(const char *str) {
+    inline bool StringBase::append(const char *str) {
         for (const char *end = str + strlen(str); !full() && str != end; str++)
             m_buff[m_length++] = *str;
         m_buff[m_length] = '\0';
         return *str == '\0';
     }
 
-    bool StringBase::append(const char *str, int n) {
+    inline bool StringBase::append(const char *str, int n) {
         for (const char *end = str + strlen(str); !full() && str != end && n > 0; str++, n--)
             m_buff[m_length++] = *str;
         m_buff[m_length] = '\0';
         return *str == '\0';
     }
 
-    bool StringBase::append(char c) {
+    inline bool StringBase::append(char c) {
         if (!full()) {
             m_buff[m_length++] = c;
             m_buff[m_length] = '\0';
@@ -343,25 +402,53 @@ namespace psl {
         return false;
     }
 
-    bool StringBase::append(int num) {
-        char converter[16];
-        itoa(num, converter, 10);
-        return append(converter);
-        // @todo check
-    }
-
-    bool StringBase::append(double num, int digits) {
-        if (availableLength() > 0) {
-            doubleToString(num, &m_buff[length()], digits, availableLength());
-            return true;
+    inline bool StringBase::append(const int num, const uint8_t base) {
+        if (full()) return false;
+        const t_size status = integerToString(num, m_buff + m_length, availableLength(), base);
+        if (status < 0) {
+            m_buff[m_length] = '\0';
+            return false;
         }
-        return false;
-        // @todo check
+        m_length += status;
+        return true;
     }
 
-    bool StringBase::insert(t_size i, const StringBase &other) {
+    inline bool StringBase::append(const int64_t num, const uint8_t base) {
+        if (full()) return false;
+        const t_size status = integerToString(num, m_buff + m_length, availableLength(), base);
+        if (status < 0) {
+            m_buff[m_length] = '\0';
+            return false;
+        }
+        m_length += status;
+        return true;
+    }
+
+    inline bool StringBase::append(const uint64_t num, const uint8_t base) {
+        if (full()) return false;
+        const t_size status = integerToString(num, m_buff + m_length, availableLength(), base);
+        if (status < 0) {
+            m_buff[m_length] = '\0';
+            return false;
+        }
+        m_length += status;
+        return true;
+    }
+
+    inline bool StringBase::append(const double num, const int digits, const uint8_t base) {
+        if (full()) return false;
+        const t_size status = doubleToString(num, m_buff + m_length, digits, availableLength(), base);
+        if (status < 0) {
+            m_buff[m_length] = '\0';
+            return false;
+        }
+        m_length += status;
+        return true;
+    }
+
+    inline bool StringBase::insert(const t_size i, const StringBase &other) {
         // @todo make work better if &other == this
-        t_size length = other.m_length;
+        const t_size length = other.m_length;
         const char *str = other.m_buff;
         if (availableLength() >= length) {
             // Check for overlap
@@ -379,8 +466,8 @@ namespace psl {
         return false;
     }
 
-    bool StringBase::insert(t_size i, const char *str) {
-        t_size length = strlen(str);
+    inline bool StringBase::insert(const t_size i, const char *str) {
+        const auto length = t_size(strlen(str));
 
         if (availableLength() >= length) {
             // Check for overlap
@@ -398,7 +485,7 @@ namespace psl {
         return false;
     }
 
-    bool StringBase::insert(t_size i, char c) {
+    inline bool StringBase::insert(t_size i, char c) {
         if (!full()) {
             memmove(&m_buff[i + 1], &m_buff[i], sizeof(char) * (m_length - i));
             m_buff[i] = c;
@@ -408,7 +495,7 @@ namespace psl {
         return false;
     }
 
-    bool StringBase::remove(int i, int len) {
+    inline bool StringBase::remove(int i, int len) {
         if (m_length - i >= len) {
             memmove(&m_buff[i], &m_buff[i + len], sizeof(char) * (m_length - i - len));
             m_length -= len;
@@ -418,7 +505,7 @@ namespace psl {
         return false;
     }
 
-    bool StringBase::pop() {
+    inline bool StringBase::pop() {
         if (!empty()) {
             m_buff[--m_length] = '\0';
             return true;
@@ -426,12 +513,12 @@ namespace psl {
         return false;
     }
 
-    void StringBase::clear() {
+    inline void StringBase::clear() {
         m_length = 0;
         m_buff[0] = '\0';
     }
 
-    StringBase &StringBase::operator=(const StringBase &other) {
+    inline StringBase &StringBase::operator=(const StringBase &other) {
         if (&other != this) {
             clear();
             append(other);
@@ -446,17 +533,19 @@ namespace psl {
         return *this;
     }
 
-    t_size StringBase::indexOf(const StringBase &other, int i) const {
-        return indexOf(other.m_buff, i);
+    inline t_size StringBase::nthIndexOf(const StringBase &other, int i) const {
+        return nthIndexOf(other.m_buff, i);
     }
 
-    t_size StringBase::indexOf(const char *str, int i) const {
-        char *ptr = m_buff;
-        while (i-- > 0 && (ptr = strstr(ptr, str)) != nullptr);
-        return ptr != nullptr ? (t_size) (ptr - m_buff) : NOT_FOUND;
+    inline t_size StringBase::nthIndexOf(const char *str, int i) const {
+        const char *ptr = m_buff;
+        while ((ptr = strstr(ptr, str)) != nullptr)
+            return ptr != nullptr ? (t_size) (ptr - m_buff) : NOT_FOUND;
+        return NOT_FOUND;
+        // @todo check
     }
 
-    t_size StringBase::indexOf(char c, int i) const {
+    inline t_size StringBase::nthIndexOf(char c, int i) const {
         if (i >= 0) {
             for (t_size j = 0; j < m_length; ++j) {
                 if (m_buff[j] == c)
@@ -467,7 +556,16 @@ namespace psl {
         return NOT_FOUND;
     }
 
-    t_size StringBase::count(const StringBase &other) const {
+    inline t_size StringBase::indexOf(char c, int i) const {
+        for (; validIndex(i); i++) {
+            if (m_buff[i] == c) {
+                return i;
+            }
+        }
+        return NOT_FOUND;
+    }
+
+    inline t_size StringBase::count(const StringBase &other) const {
         t_size count = 0;
         // Iterate through the string
         for (t_size i = 0; i <= m_length - other.m_length; ++i) {
@@ -487,9 +585,9 @@ namespace psl {
         return count;
     }
 
-    t_size StringBase::count(const char *str) const {
+    inline t_size StringBase::count(const char *str) const {
         t_size count = 0;
-        auto strLen = (t_size) strlen(str);
+        const auto strLen = (t_size) strlen(str);
 
         // Iterate through the string
         for (t_size i = 0; i <= m_length - strLen; ++i) {
@@ -509,9 +607,9 @@ namespace psl {
         return count;
     }
 
-    t_size StringBase::count(char c) const {
+    inline t_size StringBase::count(char c) const {
         t_size count = 0;
-        for (char *str = m_buff; *str != '\0'; str++) {
+        for (const char *str = m_buff; *str != '\0'; str++) {
             if (*str == c) {
                 count++;
             }
@@ -519,31 +617,57 @@ namespace psl {
         return count;
     }
 
-    bool StringBase::toBool() const {
-        return toInt() != 0;
+    inline bool StringBase::toBool(bool *success) const {
+        // Check for an integer
+        bool successInternal;
+        const int val = int(toInt(&successInternal));
+        if (successInternal) {
+            if (success != nullptr) *success = true;
+            return val != 0;
+        }
+        // Check for true/false string
+        if (*this == "true") {
+            if (success != nullptr) *success = true;
+            return true;
+        }
+        if (*this == "false") {
+            if (success != nullptr) *success = true;
+            return false;
+        }
+        if (success != nullptr) *success = false;
+        return false;
     }
 
-    int64_t StringBase::toInt() const {
-        return strtol(m_buff, NULL, m_length);
+    inline int StringBase::toInt(bool *success, uint8_t base) const {
+        return stringToInteger<int>(m_buff, success, base);
     }
 
-    double StringBase::toDouble() const {
-        return stringToDouble(m_buff);
+    inline int64_t StringBase::toInt64(bool *success, uint8_t base) const {
+        return stringToInteger<int64_t>(m_buff, success, base);
     }
 
-    StringBase &StringBase::reCreate(char *buff, t_size &length, t_size maxLength) {
+    inline uint64_t StringBase::toUInt64(bool *success, uint8_t base) const {
+        return stringToInteger<uint64_t>(m_buff, success, base);
+    }
+
+    //Julia was here
+    inline double StringBase::toDouble(bool *success, uint8_t base) const {
+        return stringToDouble(m_buff, success, base);
+    }
+
+    inline StringBase &StringBase::reCreate(char *buff, const t_size &length, const t_size maxLength) {
         m_buff = buff;
         m_length = length;
         m_maxLength = maxLength;
         return *this;
     }
 
-    void StringBase::substr(StringBase &destination, int start, int len) const {
+    inline void StringBase::substr(StringBase &destination, int start, int len) const {
         destination.clear();
         destination.append(m_buff + start, len);
     }
 
-    Substr StringBase::substr(int start, int len) {
+    inline Substr StringBase::substr(int start, int len) {
         return {*this, start, len};
     }
 }
@@ -554,26 +678,24 @@ namespace psl {
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 namespace psl {
-
-    Substr::Substr() : StringBase(&m_swapChar, m_lengthMemory, 0) {
-
+    inline Substr::Substr() : StringBase(&m_swapChar, m_lengthMemory, 0) {
     }
 
-    Substr::Substr(StringBase &str, t_size start, t_size len) : m_lengthMemory(len), StringBase(str.m_buff + start, m_lengthMemory, len) {
+    inline Substr::Substr(const StringBase &str, const t_size start, const t_size len) : StringBase(str.m_buff + start, m_lengthMemory, len), m_lengthMemory(len) {
         // Insert null term
         m_swapIndex = len;
         m_swapChar = (*this)[m_swapIndex];
         (*this)[m_swapIndex] = '\0';
     }
 
-    Substr::Substr(Substr &&other) noexcept: StringBase(other.m_buff, m_lengthMemory, other.maxLength()) {
+    inline Substr::Substr(Substr &&other) noexcept: StringBase(other.m_buff, m_lengthMemory, other.maxLength()) {
         m_lengthMemory = other.m_lengthMemory;
         m_swapIndex = other.m_swapIndex;
         m_swapChar = other.m_swapChar;
         other.transfer();
     }
 
-    Substr &Substr::operator=(Substr &&other) noexcept {
+    inline Substr &Substr::operator=(Substr &&other) noexcept {
         // Recreate the object
         release();
         reCreate(other.m_buff, m_lengthMemory, other.maxLength());
@@ -586,24 +708,32 @@ namespace psl {
         return *this;
     }
 
-    Substr::~Substr() {
+    inline Substr::~Substr() {
         release();
     }
 
-    void Substr::transfer() {
-        m_lengthMemory = 0;
-        m_swapChar = '\0';
-        m_swapIndex = NOT_FOUND;
-        reCreate(&m_swapChar, m_lengthMemory, 0);
-    }
-
-    void Substr::release() {
-        if (m_swapIndex != NOT_FOUND) {
-            (*this)[m_swapIndex] = m_swapChar;
-            transfer();
+    inline void Substr::transfer() {
+        if (m_buff != &m_swapChar) {
+            m_lengthMemory = 0;
+            m_swapChar = '\0';
+            m_swapIndex = NOT_FOUND;
+            reCreate(&m_swapChar, m_lengthMemory, 0);
         }
     }
 
+    inline void Substr::release() {
+        if (m_buff != &m_swapChar) {
+            if (m_swapIndex != NOT_FOUND) {
+                (*this)[m_swapIndex] = m_swapChar;
+                transfer();
+            }
+        }
+    }
+
+
+    inline void string_test() {
+    }
 }
 
-#endif //PATRICK_STANDARD_LIB_String22_H
+
+#endif //PATRICK_STANDARD_LIB_String_H
